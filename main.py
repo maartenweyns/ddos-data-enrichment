@@ -1,4 +1,4 @@
-import os
+import time
 
 from datetime import datetime
 from common.asn import get_ip_asn
@@ -42,6 +42,7 @@ def create_metadata(client, start_date=None):
         ])
 
     insert_metadata(client, data)
+    print(f"Inserted {len(data)} entries.")
 
 
 # Create ip_metadata in the clickhouse db
@@ -52,4 +53,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    while True:
+        main()
+        print("Sleeping now...")
+        time.sleep(300)

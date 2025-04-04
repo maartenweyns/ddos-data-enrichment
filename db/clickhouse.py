@@ -10,12 +10,14 @@ def get_client():
 
     us = os.getenv('CLICKHOUSE_USER')
     pw = os.getenv('CLICKHOUSE_PASSWORD')
-    
+    database = os.getenv('CLICKHOUSE_DATABASE')
+    host = os.getenv('CLICKHOUSE_HOST')
+
     client = clickhouse_connect.get_client(
-        host='localhost',
+        host=host,
         username=us,
         password=pw,
-        database='gorilla_neo'
+        database=database
     )
     
     return client
@@ -41,14 +43,14 @@ def get_targets(client, start_date):
 FROM
 (
     SELECT arrayJoin(targets) AS target
-    FROM commands
+    FROM gorilla_neo_commands
     WHERE timestamp > parseDateTimeBestEffortOrNull('2025-04-04 11:50:17.222346')
 )"""
     else:
         query = """SELECT DISTINCT target.1 AS ip
 FROM (
     SELECT arrayJoin(targets) AS target
-    FROM commands
+    FROM gorilla_neo_commands
 );"""
     
     return client.query(query).result_rows
