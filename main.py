@@ -6,28 +6,13 @@ from common.geoip import get_ip_country
 from db.clickhouse import get_client, init_table, get_targets, insert_metadata
 
 
-def create_metadata(client, start_date=None):
-    if not start_date:
-        # Try to read the start date from a file
-        try:
-            f = open('meta', 'r')
-            start_date = f.read().strip()
-            start_date = datetime.strptime(start_date, "%Y-%m-%d %H:%M:%S.%f")
-            f.close()
-            print(f"Found start time: {str(start_date)}")
-        except:
-            print("No starting date found. Doing a full database metadata lookup.")
-    
-    # Save the current time (UTC)
-    now = datetime.now()
-    f = open('meta', 'w')
-    f.write(str(now))
-    f.close()
-
+def create_metadata(client):
     # Get a list of IPs
     ips = []
-    ips = get_targets(client, start_date)
-
+    ips = get_targets(client)
+    ips = list(set(ips))
+    print(f"Need to look up {len(ips)} ips...")
+    
     # Construct the data for every IP
     data = []
     for ip in ips:

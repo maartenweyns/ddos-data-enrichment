@@ -30,6 +30,7 @@ def init_table(client):
     asn Nullable(UInt32),
     org Nullable(String)
 )
+ENGINE = MergeTree
 PRIMARY KEY ip
 ORDER BY ip
 COMMENT 'Metadata for IP targets'"""
@@ -37,22 +38,15 @@ COMMENT 'Metadata for IP targets'"""
     client.command(query)
 
 
-def get_targets(client, start_date):
-    if start_date:
-       query = f"""SELECT DISTINCT target.1 AS ip
-FROM
-(
+def get_targets(client):
+    query = """SELECT DISTINCT target.1 AS ip FROM (
     SELECT arrayJoin(targets) AS target
     FROM gorilla_neo_commands
-    WHERE timestamp > parseDateTimeBestEffortOrNull('2025-04-04 11:50:17.222346')
-)"""
-    else:
-        query = """SELECT DISTINCT target.1 AS ip
-FROM (
-    SELECT arrayJoin(targets) AS target
-    FROM gorilla_neo_commands
-);"""
-    
+) AS t
+LEFT JOIN ip_metadata AS m
+ON t.target.1 = m.ip
+WHERE m.ip == '0.0.0.0';"""
+   
     return client.query(query).result_rows
 
 
